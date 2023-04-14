@@ -1,0 +1,244 @@
+<div x-data="getData" class="container fully-spaced-row">
+  <div id="template" class="small-form" data-cc-animate>
+    <div id="customer">
+      <!-- Create Customer -->
+      <div id="create-customer">
+        <div class="template_header">
+          <h2 class="title">{{ 'customer.register.title' | t }}</h2>
+        </div>
+        <div class="input-row" x-show="registerForm">
+          <label for="first_name" class="login">{{ 'customer.register.first_name' | t }} *</label>
+          <input
+            type="text"
+            x-model="formData.first_name"
+            value=""
+            name="customer[first_name]"
+            id="first_name"
+            class="large"
+            size="30"
+          >
+        </div>
+
+        <div class="input-row" x-show="registerForm">
+          <label for="last_name" class="login">{{ 'customer.register.last_name' | t }} *</label>
+          <input
+            type="text"
+            x-model="formData.last_name"
+            value=""
+            name="customer[last_name]"
+            id="last_name"
+            class="large"
+            size="30"
+          >
+        </div>
+
+        <div class="input-row" x-show="registerForm">
+          <label for="phone" class="login">{{ 'customer.register.phone' | t }} *</label>
+          <input
+            type="text"
+            x-model="formData.phone"
+            value=""
+            name="customer[phone]"
+            id="phone"
+            class="large"
+            size="30"
+          >
+        </div>
+
+        <div class="input-row" x-show="registerForm">
+          <label for="email" class="login">{{ 'customer.register.email' | t }}</label>
+          <input
+            type="email"
+            x-model="formData.email"
+            value=""
+            name="customer[email]"
+            id="email"
+            class="large password"
+            size="30"
+          >
+        </div>
+        <div class="input-row" x-show="codeForm">
+          <label for="code" class="login">{{ 'customer.register.code' | t }}</label>
+          <input type="text" x-model="smsCode" value="" name="customer[code]" id="code" class="large" size="30">
+        </div>
+        <div class="input-row" x-show="isError">
+          <span x-text="errorMessage"></span>
+        </div>
+        <div class="action_bottom" x-show="registerForm">
+          <button class="btn" @click="submitData" type="button">{{ 'customer.register.submit' | t }}</button>
+          <span class="note">
+            <a href="{{ routes.account_login_url }}">{{ 'customer.register.log_in' | t }}</a>
+            {{ 'customer.general.or' | t }}
+            <a href="{{ routes.root_url }}">{{ 'customer.register.cancel' | t }}</a>
+          </span>
+        </div>
+        <div class="action_bottom" x-show="codeForm">
+          <button class="btn" @click="sendCode" type="button">{{ 'customer.login.sign_in' | t }}</button>
+        </div>
+      </div>
+      <!-- /#create-customer -->
+    </div>
+  </div>
+  <div id="customer-login" x-show="loginForm">
+    <div class="template_header">
+      <h2 class="title">{{ 'customer.login.title' | t }}</h2>
+    </div>
+
+    {% form 'customer_login' %}
+      {{ form.errors | default_errors }}
+
+      <div id="login_email" class="input-row">
+        <label for="customer_email" class="login">{{ 'customer.login.email' | t }}</label>
+        <input
+          type="email"
+          id="customer-email"
+          value=""
+          name="customer[email]"
+          class="large"
+          size="30"
+        >
+      </div>
+
+      {% if form.password_needed %}
+        <div id="login_password" class="input-row">
+          <label for="customer_password" class="login">{{ 'customer.login.password' | t }}</label>
+          <div class="text-over-input">
+            <input
+              type="password"
+              id="customer-password"
+              value=""
+              name="customer[password]"
+              class="large password"
+              size="16"
+            >
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="action_bottom">
+        <div class="opposing-items">
+          <button class="btn" id="login-submit" type="submit">{{ 'customer.login.sign_in' | t }}</button>
+
+          <a href="{{ routes.account_register_url }}">{{ 'customer.login.register' | t }}</a>
+        </div>
+      </div>
+    {% endform %}
+  </div>
+</div>
+<script type="text/javascript">
+    function getData() {
+      return {
+        formData: {
+          first_name: "",
+          last_name: "",
+          phone: "+998",
+          email: ""
+        },
+        smsCode: '',
+        loginForm: false,
+        loading: false,
+        isError: false,
+        errorMessage: '',
+        registerForm: true,
+        codeForm: false,
+        loginBtn: document.getElementById('login-submit'),
+        customerEmail: document.getElementById('customer-email'),
+        customerPassword: document.getElementById('customer-password'),
+
+        isEmail(email) {
+          var re = /\S+@\S+\.\S+/;
+          return re.test(email);
+        },
+        isPhone(phone) {
+          var re = /^\+?998[0-9]{2}[0-9]{7}$/;
+          return re.test(phone);
+        },
+
+        async postData(url = '', data = {}) {
+          const response = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify(data)
+            }).then(response => {
+              if (response.ok) {
+                return response.json();
+              }
+            })
+            .then((data) => {
+              return data;
+            });
+
+          return await response;
+        },
+
+        submitData() {
+          this.isError = false;
+          this.errorMessage = '';
+
+          if (!this.formData.first_name.length ||
+            !this.formData.last_name.length ||
+            !this.formData.phone.length) {
+            this.errorMessage = 'Пожалуйста, заполните все обязательные поля и попробуйте еще раз!';
+            this.isError = true;
+            return;
+          }
+          if (!this.isPhone(this.formData.phone)) {
+            this.errorMessage = 'Пожалуйста, заполните телефон!';
+            this.isError = true;
+            return;
+          }
+          this.loading = true;
+          fetch('https://www.smartpost.store/apps/humocommerce/customer/register', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(this.formData)
+            })
+            .then((response) => {
+              if (response.status === 200) {
+                this.registerForm = false;
+                this.codeForm = true;
+              } else {
+                throw new Error("Не удалось зарегистрироваться");
+              }
+
+              return response.json();
+            })
+            .catch((error) => {
+              this.errorMessage = "Ошибка ooops!"
+              this.isError = true;
+            })
+            .finally(() => {
+              this.loading = false;
+            });
+        },
+
+        async sendCode() {
+          if (!this.smsCode) {
+            this.errorMessage = 'Пожалуйста, заполните код!';
+            this.isError = true;
+            return;
+          }
+          data = {
+            phone: this.formData.phone,
+            code: this.smsCode,
+          }
+          const response = await this.postData('https://www.smartpost.store/apps/humocommerce/customer/login/attempt', data);
+          if (response) {
+            this.customerEmail.value = response.data.email;
+            this.customerPassword.value = response.data.password;
+            this.loginBtn.click();
+          }
+        }
+    }
+  }
+</script>
+{% schema %}
+{
+"name": "Customer register"
+}
+{% endschema %}

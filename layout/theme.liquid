@@ -1,0 +1,224 @@
+<!doctype html>
+{%- liquid
+  assign rtl_langs = 'ar,arc,dv,fa,ha,he,khw,ks,ku,ps,ur,yi' | split: ','
+  if rtl_langs contains localization.language.iso_code
+    assign lang_dir = 'rtl'
+  else
+    assign lang_dir = 'ltr'
+  endif
+-%}
+<html lang="{{ request.locale.iso_code }}" dir="{{ lang_dir }}">
+  <head>
+    <!-- Symmetry 5.6.0 -->
+
+    <title>
+      {{ page_title }}
+      {% if current_tags -%}
+        {%- assign meta_tags = current_tags | join: ', ' %} &ndash; {{ 'general.meta.tags' | t: tags: meta_tags -}}
+      {%- endif %}
+      {% if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{% endif %}
+      {% unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless %}
+    </title>
+    <meta name="facebook-domain-verification" content="q7yx1j6iduj8z0mfizrvqcpdn31lwx" />
+    <meta name="facebook-domain-verification" content="n05ks8adwi2hi1vhzkpfrr0nmu3vqz" />
+
+    {% render 'head-tag' %}
+
+    {%- liquid
+      assign base_font = settings.type_base_font
+      assign base_font_bold = base_font | font_modify: 'weight', 'bolder'
+      assign base_font_medium = base_font | font_modify: 'weight', '500'
+      assign base_font_italic = base_font | font_modify: 'style', 'italic'
+      assign base_font_bold_italic = base_font_bold | font_modify: 'style', 'italic'
+      assign heading_font = settings.type_heading_font
+      assign logo_font = settings.type_logo_font
+      assign nav_font = settings.type_nav_font
+      assign nav_font_600 = nav_font | font_modify: 'weight', '600'
+    -%}
+
+    <style>
+      {{ base_font | font_face: font_display: 'fallback' }}
+      {{ base_font_bold | font_face: font_display: 'fallback' }}
+      {{ base_font_medium | font_face: font_display: 'fallback' }}
+      {{ base_font_italic | font_face: font_display: 'fallback' }}
+      {{ base_font_bold_italic | font_face: font_display: 'fallback' }}
+      {{ heading_font | font_face: font_display: 'fallback' }}
+      {{ logo_font | font_face: font_display: 'fallback' }}
+      {{ nav_font | font_face: font_display: 'fallback' }}
+      {{ nav_font_600 | font_face: font_display: 'fallback' }}
+    </style>
+
+    {% render 'social-meta-tags' %}
+
+    {{ 'styles.css' | asset_url | stylesheet_tag: preload: true }}
+
+    {%- if settings.custom_theme_css != blank -%}
+      {{ 'custom.css' | asset_url | stylesheet_tag: preload: true }}
+    {%- endif -%}
+
+    {%- if settings.swatch_enabled and settings.swatch_value_list != blank -%}
+      <link rel="stylesheet" href="{{ 'swatches.css' | asset_url }}" media="print" onload="this.media='all'">
+      <noscript><link rel="stylesheet" href="{{ 'swatches.css' | asset_url }}"></noscript>
+    {%- endif -%}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <script>
+      window.theme = window.theme || {};
+      theme.money_format_with_product_code_preference = {% if settings.product_currency_code_enabled %}{{ shop.money_with_currency_format | json }}{% else %}{{ shop.money_format | json }}{% endif %};
+      theme.money_format_with_cart_code_preference = {% if settings.cart_currency_code_enabled %}{{ shop.money_with_currency_format | json }}{% else %}{{ shop.money_format | json }}{% endif %};
+      theme.money_format = {{ shop.money_format | json }};
+      theme.strings = {
+        previous: {{ 'general.accessibility_labels.previous' | t | json }},
+        next: {{ 'general.accessibility_labels.next' | t | json }},
+        addressError: {{ 'map.errors.address_error' | t | json }},
+        addressNoResults: {{ 'map.errors.address_no_results' | t | json }},
+        addressQueryLimit: {{ 'map.errors.address_query_limit_html' | t | json }},
+        authError: {{ 'map.errors.auth_error' | t | json }},
+        icon_labels_left: {{ 'general.icon_labels.left' | t | escape | json }},
+        icon_labels_right: {{ 'general.icon_labels.right' | t | escape | json }},
+        icon_labels_down: {{ 'general.icon_labels.down' | t | escape | json }},
+        icon_labels_close: {{ 'general.icon_labels.close' | t | escape | json }},
+        icon_labels_plus: {{ 'general.icon_labels.plus' | t | escape | json }},
+        imageSlider: {{ 'general.slider.images' | t | json }},
+        cart_terms_confirmation: {{ 'cart.terms.confirmation' | t | json }},
+        products_listing_from: {{ 'products.listing.from' | t | json }},
+        layout_live_search_see_all: {{ 'layout.live_search.see_all' | t | json }},
+        products_product_add_to_cart: {{ 'products.product.add_to_cart' | t | json }},
+        products_variant_no_stock: {{ 'products.variant.no_stock' | t | json }},
+        products_variant_non_existent: {{ 'products.variant.non_existent' | t | json }},
+        products_product_pick_a: {{ 'products.product.pick_a' | t | json }},
+        general_navigation_menu_toggle_aria_label: {{ 'general.navigation.menu_toggle_aria_label' | t | json }},
+        general_accessibility_labels_close: {{ 'general.accessibility_labels.close' | t | json }},
+        products_product_adding_to_cart: {{ 'products.product.adding_to_cart' | t | json }},
+        products_product_added_to_cart: {{ 'products.product.added_to_cart' | t | json }},
+        general_quick_search_pages: {{ 'general.quick_search.pages' | t | json }},
+        general_quick_search_no_results: {{ 'general.quick_search.no_results' | t | json }},
+        collections_general_see_all_subcollections: {{ 'collections.general.see_all_subcollections' | t | json }}
+      };
+      theme.routes = {
+        cart_url: '{{ routes.cart_url }}',
+        cart_add_url: '{{ routes.cart_add_url }}.js',
+        cart_change_url: '{{ routes.cart_change_url }}',
+        predictive_search_url: '{{ routes.predictive_search_url }}'
+      };
+      theme.settings = {
+        cart_type: {{ settings.cart_type | json }},
+        quickbuy_style: {{ settings.quickbuy_style | json }},
+        avoid_orphans: {{ settings.avoid_orphans | json }}
+      };
+      document.documentElement.classList.add('js');
+    </script>
+
+    {{ content_for_header }}
+  </head>
+
+  <body
+    class="
+      template-{{ template | split: '.' | first | handle }}
+      {%- if template.suffix %} template-suffix-{{ template.suffix }}{% endif -%}
+      {%- if settings.swatch_enabled %} swatch-method-{{ settings.swatch_method }} swatch-style-{{ settings.swatch_style }}{% endif -%}
+    "
+    data-cc-animate-timeout="0"
+  >
+    {%- if settings.animations_enabled_desktop -%}
+      <script>
+        if ('IntersectionObserver' in window) {
+          document.body.classList.add("cc-animate-enabled");
+        }
+      </script>
+  <!-- Bitrix -->
+<script>
+        (function(w,d,u){
+                var s=d.createElement('script');s.async=true;s.src=u+'?'+(Date.now()/60000|0);
+                var h=d.getElementsByTagName('script')[0];h.parentNode.insertBefore(s,h);
+        })(window,document,'https://smartpost.me/upload/crm/site_button/loader_1_9cehod.js');
+</script>
+  <!-- Bitrix -->
+   <!-- Online PBX -->
+<script src="https://callback3.onlinepbx.uz/?cb-id=faea1db4-3dad-4886-91ce-be6aded3643b"></script>
+  <!-- Online PBX -->
+  <!-- Yandex.Metrika counter -->
+<script type="text/javascript" >
+   (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+   m[i].l=1*new Date();
+   for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+   k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+   (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+   ym(92844030, "init", {
+        clickmap:true,
+        trackLinks:true,
+        accurateTrackBounce:true,
+        webvisor:true,
+        ecommerce:"dataLayer"
+   });
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/92844030" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  <!-- /Yandex.Metrika counter -->
+    <!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '692597029276117');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=692597029276117&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+    <!-- Meta Pixel Code -->
+<script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1320816928788082');
+  fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1320816928788082&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+
+    {%- endif -%}
+
+    <a class="skip-link visually-hidden" href="#content">{{ 'general.accessibility_labels.skip_to_content' | t }}</a>
+
+    {% section 'announcement-bar' %}
+    {% section 'header' %}
+    {% section 'store-messages' %}
+
+    <main id="content" role="main">
+      <div class="container cf">
+        {{ content_for_layout }}
+      </div>
+      <!-- /.container -->
+    </main>
+    <!-- /#content -->
+
+    {% if request.path != '/challenge' %}
+      <div id="pagefooter">
+        {% section 'cross-page-promos' %}
+        {% section 'footer' %}
+      </div>
+
+      {% section 'popup' %}
+    {% endif %}
+
+    {{ 'vendor.min.js' | asset_url | script_tag }}
+    {{ 'theme.js' | asset_url | script_tag }}
+
+  <script src="//cdn.codeblackbelt.com/js/modules/frequently-bought-together/main.min.js?shop=smartpostuz.myshopify.com" defer></script>
+ {{ 'glabal_function.js' | asset_url | script_tag }}
+  </body>
+</html>
